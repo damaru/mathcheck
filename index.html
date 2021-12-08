@@ -159,9 +159,9 @@ width: 100%;
 	<div id="wiris" class="editor-container"></div>
 	</div>
 	<div id='buttons' style=" clear: both;">
-    <button class="mui-btn mui-btn--primary mui-btn--raised" style="float:left;margin-right: 25%;" onclick="check_ans(window._mf)" > OK </button>
-    <button class="mui-btn mui-btn--danger mui-btn--raised" style="float:right;margin-left:25%" onclick="do_clear()" > clear </button> 
-    <button class="mui-btn mui-btn--grey mui-btn--raised" style="float:right;margin-right: 25%;" onclick="do_show()" > Show </button>
+    <button class="mui-btn mui-btn--primary mui-btn--raised" style="float:left;margin-right:5%;" onclick="check_ans(window._mf)" > OK </button>
+    <button class="mui-btn mui-btn--danger mui-btn--raised" style="float:right;margin-left:5%" onclick="do_clear()" > clear </button> 
+    <button id=show class="mui-btn mui-btn--danger mui-btn--raised" style="float:right;margin-right:5%;display: none;" onclick="do_show()" > Show </button>
 	</div>
 
  </div>
@@ -241,12 +241,15 @@ function replace_symbols(txt){
 				var log =  document.getElementById('log');
                 if(window._question == ''){
                     window._question = ltx;
+                    window._errors = 0;
+					document.getElementById('show').style.display = 'none';
 
 					window._answer = nerdamer(txt, ['numer']).evaluate().text();
 					window._current = `<div class=powerline>  <span class="powerline__prompt dracula-blue">  Q${window._qcount}: </span> <span class=" question" id="q${window._qcount}" >\\( ${ltx} \\)<br id=${id}> </span></div>`;
                     prompt('Type Your Answer:')
                 } else if(window._question === ltx){
 					    window._current += `<div class=powerline>  <span class="powerline__prompt dracula-red">😟</span> <span class="answer" style=color:red> you can't just type the question back <br id=${id}> </span></div>`;
+                    	window._errors++;
                 } else {
 
 					console.log("ans", window._answer)
@@ -254,6 +257,7 @@ function replace_symbols(txt){
      				console.log("YOU", nerdamer(txt,['numer']).evaluate().text())
                     if(txt === window._answer ||  window._answer === nerdamer(txt,['numer']).evaluate().text()){
 					    window._current += `<div class=powerline>  <span class="powerline__prompt dracula-green">😀</span> <span class="answer" style=color:#004400>  \\( ${ltx} ${txt!=_answer?" = " + _answer:""}\\)    <br id=${id}> </span></div><hr>`;
+						document.getElementById('show').style.display = 'none';
 					    //window._current += `<span style=color:green class=answer>Correct Answer: \\( ${ltx} \\) </span> <br id=${id}><hr>`;
                         window._answer = window._question = '' ;
                         prompt('Type Your Question:')
@@ -262,8 +266,12 @@ function replace_symbols(txt){
 						window._current = '';
                     } else {
 					    window._current += `<div class=powerline>  <span class="powerline__prompt dracula-red">😟</span><span class="answer" style=color:red > \\( ${ltx}\\)  (wrong answer) <br id=${id}> </span></div>`;
+                    	window._errors++;
 					    //window._current += `<span style=color:red class=answer> Wrong Answer: \\( ${ltx} \\)<br id=${id}> </span>`;
                         prompt('Try Again: ')
+						if(window._errors > 5){
+							document.getElementById('show').style.display = 'block';
+						}
                     }
                 }
 				log.innerHTML = window._log + window._current;
