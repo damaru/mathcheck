@@ -1,115 +1,206 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "https://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+
 <html>
    <head>
 		   <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 		   <!--META HTTP-EQUIV='Content-Security-Policy' CONTENT="default-src 'self' * 'unsafe-inline' 'unsafe-eval'; script-src 'self' 'unsafe-inline' *.wiris.net 'unsafe-eval' *; style-src 'self' 'unsafe-inline' *.wiris.net * ; img-src 'self' *; media-src 'self' * ; frame-src *;"--!>
 		   
-		   <META HTTP-EQUIV='Content-Security-Policy' CONTENT="default-src 'self' * 'unsafe-inline' *.damaru.org  ; script-src 'self' 'unsafe-inline' *.wiris.net 'unsafe-eval' *.damaru.org;  style-src 'self' 'unsafe-inline' *.wiris.net *.googleapis.com; img-src * 'self' data: blob:;font-src * 'self' data:* ">
+		   <META HTTP-EQUIV='Content-Security-Policy' CONTENT="default-src 'self' * 'unsafe-inline' * *.damaru.org  ; script-src 'self' 'unsafe-inline' * 'unsafe-eval' *.damaru.org *.googleapis.com;  style-src 'self' 'unsafe-inline' * *.wiris.net *.googleapis.com; img-src * 'self' data: blob:;font-src * 'self' data:">
 		   <meta content="utf-8" http-equiv="encoding">
+		   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 		   <!--meta http-equiv="Content-Security-Policy" content="default-src *; img-src https://*; child-src 'none';"--!>
-    <script src="https://www.wiris.net/demo/hand/hand.js"></script>
+<link rel="stylesheet" href="_mq.css"/>
+  <script>var exports = {};</script>
+<script src="_mq.js"> </script>
+<!--script src="evaluatex/dist/evaluatex.min.js"></script-->
+<script src="https://www.wiris.net/demo/hand/hand.js"></script>
+<script src="nerdamer/all.min.js"></script>
+<script src="mathml2latex/dist/mathml2latex.js"></script>
+<script defer src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+
+</head>
+
+
 <style>
 
-@import url('https://fonts.googleapis.com/css?family=Shadows+Into+Light');
-@import url('https://fonts.googleapis.com/css?family=Gloria+Hallelujah');
-
-#content h1 {
-	margin: 10px;
-    padding: 40px;
-	text-align:center;
-	vertical-align: middle;
-	width: 70%;
-	position: absolute;
-    left: -1000px;
-    -webkit-animation: slide 0.5s forwards;
-    animation: slide 0.5s forwards;
-    font-family: monospace;
-   font-family: 'Gloria Hallelujah', sans-serif;
+#math-field {
+ width: 50vw;
+ float:left;
+ height: 180px;
 }
 
-@-webkit-keyframes slide {
-    100% { left: 15%; }
+#wiris{
+
+ float:left;
+ width: 45vw;
+ height: 180px;
+
 }
 
-@keyframes slide {
-    100% { left: 15%; }
+.question {
+    margin: 20px;    
+    font-size: 3em;
+    width: 100%;
+    background-color: pink;
+    border-bottom: black 1px dashed;
 }
 
-#answer {
-    height:40;
-    padding: 1em;
-    font-size: 1.5em;
-    background-color: rgba(0, 50, 0, 0.8);
-    color: #FFF;
-    font-family: monospace;
-    border: 2px solid rgba(20, 20, 20, 1);
-    outline: none;
-    position:fixed;
-	bottom: 10px;
-    box-shadow: rgba(20,20,20,0.5) 0px 2px 3px, inset rgba(0,0,0,0.2) 1px -1px 1px;
-   width: 95%;
-}
-
-#wiris {
-	width: 99%;
-	height: 99%;
-    position:fixed;
-}
-
-#ok {
-	right: 10px;
-    position:fixed;
-	bottom: 50px;
+.answer {
+    margin: 20px;    
+    font-size: 2em;
+    background-color: wheat;
 }
 
 
-.wrs_toolbar {
-		display:none;
-		width: 0;
-		position:fixed;
+#toolbar {
+ position: fixed;
+ bottom: 0;
+ min-height: 200px;
+ width: 100vw;
+ padding: 10px;
+ overflow: hidden;
+ background: white;
+ border-top: black 2px dashed;
 }
 
-.wrs_canvasContainer ,.wrs_withPreview {
-		width: 100%;
-		margin-left: 0;
-		position: absolute;
+#prompt{
+ padding: 10px;
+
 }
 
-#bottom { 
-		width: 90%;
+#log {
+overflow: scroll;
+position: fixed;
+height: calc(100vh - 400px);
+width: 90%;
 }
 
 </style>
 
-<script>
-// Create a socket instance
-//var socket = new WebSocket('ws://192.168.0.4:8765');
-var socket = {}
-//var socket = new WebSocket('wss://192.168.0.4:8765');
-var slide = {}
+<div id=log> </div>
+<div id=toolbar> 
+    <div id=prompt> Type Your Question</div> 
+    <div id=math-field class=mathfield> </div> 
+	<div id="wiris" class="editor-container"></div>
+	<div id='buttons' style="position: fixed; bottom: 0;">
+    <button onclick="do_clear()"> clear </button>
+    <button onclick="check_ans(_mf)"> Check </button>
+	</div>
+ </div>
 
-let question = ""
-let answer = ""
+			   <script>
 
-function do_check(){
-		if (question === "") {
-				document.getElementById("content").innerHTML = "<h1>" +  document.getElementById("answer").value + "</h1>";
-		} else {
-				//document.getElementById("answer").value = "";
-				document.getElementById("content").innerHTML = "<h1>" +  document.getElementById("answer").value + "</h1>";
-				//document.getElementById("content").innerHTML =  "";
-				question = "";
-		}
-		//message("check", document.getElementById('answer').value);
+
+					   function do_clear(){
+					window._mf.latex('');
+	    window._question = '';
+	    window._answer = '';
+        hand.clear();
+                        prompt('Type Your Question:')
+					   }
+
+    function do_mathjax(){
+            if (window.MathJax && window.MathJax.Hub && typeof window.MathJax.Hub.Typeset !== 'undefined') {
+                window.MathJax.Hub.Typeset()
+            }
+            if (window.MathJax && typeof window.MathJax.typeset !== 'undefined') {
+                window.MathJax.typeset()
+            }
+    }
+
+
+function prompt(str) {
+    document.getElementById('prompt').innerHTML = str;
 }
 
-function do_answer(){
-		//message("answer", document.getElementById('answer').value);
+function makeid(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * 
+ charactersLength));
+   }
+   return result;
 }
 
-window.onload = function(){
-		document.getElementById("wiris").focus();
-}
+window._log = '';
+			function check_ans(mf){
+				var ltx = mf.latex();
+				var txt = mf.text();
+                console.log(ltx)
+                console.log(txt)
+                if(txt === "")
+                    return;
+				var id = makeid(10);
+				var log =  document.getElementById('log');
+                if(window._question == ''){
+                    window._question = ltx;
+
+                    if (txt.match(/\[\/\]/)){
+                        txt = txt.replace(/\[\/\]/, "/");
+                        console.log("fixdiv:", txt);
+                    }                    
+					window._answer = nerdamer(txt, ['numer']).evaluate().text();
+					window._log += `<span class=question > Q${window._qcount}: \\( ${ltx} \\)<br id=${id}> </span>`;
+                    prompt('Type Your Answer:')
+                } else if(window._question === ltx){
+					    window._log += `<span style=color:red > <span style=color:red> you can't just type the question back <br id=${id}> </span>`;
+                } else {
+
+					console.log(window._answer)
+					console.log(window._question)
+
+					if (txt.match(/\d+\s+\(/) && ltx.match(/\d+\\\s+\\frac/)){
+                        txt = txt.replace(/(\d)\s+\(/, "$1+(");
+                        console.log("fix:", txt);
+                    }
+					console.log(window._answer)
+					console.log(window._question)
+					console.log(nerdamer(txt,['numer']).evaluate().text())
+                    if(window._answer == nerdamer(txt,['numer']).evaluate().text()){
+					    window._log += `<span style=color:green class=answer>Correct Answer: \\( ${ltx} \\) </span> <br id=${id}><hr>`;
+                        window._answer = window._question = '' ;
+                        prompt('Type Your Question:')
+                        _qcount +=1 ;
+                    } else {
+					    window._log += `<span style=color:red class=answer> Wrong Answer: \\( ${ltx} \\)<br id=${id}> </span>`;
+                        prompt('Try Again: ')
+                    }
+                }
+				log.innerHTML = window._log;
+				setTimeout(()=>{ document.getElementById(id).scrollIntoView({block:"end"}); }, 100);
+                    
+				do_mathjax();
+				mf.latex('');
+                hand.clear();
+			}
+
+
+
+       var mathFieldSpan = document.getElementById('math-field');
+       //var latexSpan = document.getElementById('answer');
+
+       var MQ = MathQuill.getInterface(2); // for backcompat
+       var mathField = MQ.MathField(mathFieldSpan, {
+            //spaceBehavesLikeTab: true, // configurable
+            autoCommands: "frac",
+            handlers: {
+                edit: function() { // useful event handlers
+                    //latexSpan.value = mathField.latex(); // simple API
+                },
+                enter: function() {
+                    check_ans(mathField);
+                }
+            }
+        });
+        mathField.focus();
+	    window._mf = mathField;
+	    window._qcount = 1;
+	    window._question = '';
+	    window._answer = '';
+
 
 function getDOM(xmlstring) {
 		parser=new DOMParser();
@@ -142,7 +233,25 @@ function stringifyMathML(mml) {
 		   xmlDoc = getDOM(mml);
 		   return remove_tags(xmlDoc.documentElement);
 }
+function getLaTeX(mathml, callback) {
+	var req = new XMLHttpRequest();
+	req.open("POST","https://www.wiris.net/demo/editor/mathml2latex", false);
+	req.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+	var params = "mml="+encodeURIComponent(mathml);
 
+	req.onreadystatechange = function () {
+		if (req.readyState == 4) {
+			if (req.status != 200)  {
+				callback("Error generating LaTeX.");
+			}
+			else {
+				callback(req.responseText);
+			}
+		}
+	}
+
+	req.send(params);
+}
 
 var hand;
 window.onload = function () {
@@ -150,47 +259,35 @@ window.onload = function () {
 		com.wiris.js.JsHand.DEFAULT_RECOGNITION_DELAY=50;
 		hand = com.wiris.js.JsHand.newInstance( {'lineWidth':5, 'lineColor':'#030'}  );
 
-		//hand.setParams({'constraints': { 'symbols':["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "=", "+", "-", "/", "\u00D7", "\u00F7", ",", ".", "\u221A", "(", ")"] , 'structure':["General","Fractions","Radicals"] } });
+		hand.setParams({'constraints': { 'symbols':["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "=", "+", "-", "/", "\u00D7", "\u00F7", ",", ".", "\u221A", "(", ")"] , 'structure':["General","Fractions","Radicals"] } });
 
 		hand.insertInto(document.getElementById('wiris'));
 
 		hand.addHandListener({
 				contentChanged: function (instance) {
-						document.getElementById('answer').value = stringifyMathML(hand.getMathML());
-						setTimeout(function(){ do_check(); }, 	500)
+                    //console.log(hand.getMathML())
+                    var mml = hand.getMathML();
+                    //window._mf.mathml(mml);
+                    //getLaTeX(mml,(l)=>{console.log("lat", l);  window._mf.latex(l); })
+                    window._mf.latex(MathML2LaTeX.convert(hand.getMathML()))
+                    //console.log(stringifyMathML(hand.getMathML()))
+						//window._mf.latex(stringifyMathML(hand.getMathML()));
+						//setTimeout(function(){ do_check(); }, 	500)
 				},
 				recognitionError: function (instance, msg) {
 						//document.getElementById('answer').value = "Error: " + msg;
 				},
 				strokesChanged: function(instance) {
-						document.getElementById('answer').value = stringifyMathML(hand.getMathML());
+						//window._mf.latex(stringifyMathML(hand.getMathML()));
+                        window._mf.latex(MathML2LaTeX.convert(hand.getMathML()))
 						//setTimeout(function(){ do_check(); }, 	500)
 				}
 		});
+document.getElementById("wiris").focus();
+    };
 
-}
 
-function do_key(evt) {
-		//alert(evt.key);
-		if (evt.key == 'ArrowLeft')
-				hand.undo();
-		if (evt.key == 'ArrowRight')
-				hand.redo();
-		if (evt.key == 'Enter')
-				do_check();
-		if (evt.key == 'Escape' || evt.key == 'Delete')
-				hand.clear();
-};
+	   </script>
 
-document.addEventListener("keypress",do_key,false);
 
-</script>
-<body >
-		<div id="main" style="position:relative;">
-				<div id="wiris" class="editor-container"></div>
-				<div id = content> </div>
-				<!--input id="answer" onChange='answer(this.value);' type="text" autofocus value=""> </input--!>
-				<input id="answer" type="text" autofocus value=""> </input>
-		</div>
-</body>
-</html>     
+
