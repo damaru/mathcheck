@@ -25,17 +25,18 @@
 <style>
 
 #math-field {
- width: 50vw;
+ width: 40vw;
  float:left;
  height: 180px;
+margin:20px;
 }
 
 #wiris{
 
  float:left;
- width: 45vw;
+ width: 40vw;
  height: 180px;
-
+margin:20px;
 }
 
 .question {
@@ -72,7 +73,7 @@
 #log {
 overflow: scroll;
 position: fixed;
-height: calc(100vh - 400px);
+height: calc(100vh - 200px);
 width: 90%;
 }
 
@@ -81,28 +82,34 @@ width: 90%;
 <div id=log> </div>
 <div id=toolbar> 
     <div id=prompt> Type Your Question</div> 
+
     <div id=math-field class=mathfield> </div> 
 	<div id="wiris" class="editor-container"></div>
-	<div id='buttons' style="position: fixed; bottom: 0;">
-    <button onclick="do_clear()"> clear </button>
-    <button onclick="check_ans(_mf)"> Check </button>
+	<div id='buttons' style="float:left">
+    <button onclick="do_clear()" style="height: 50px; width: auto; min-width: 5vw; margin: 20px; background-color:#FF9999;  border: none;border-radius: 2px;"> clear </button><p></p>
+    <button onclick="check_ans(_mf)" style="height: 50px; width: auto; min-width: 5vw; margin: 20px; background: #99FF99;  border: none;border-radius: 2px;"> ok </button>
 	</div>
+
+
  </div>
 
 			   <script>
 
 
-					   function do_clear(){
-					window._mf.latex('');
+function do_clear(){
+		window._mf.latex('');
 	    window._question = '';
 	    window._answer = '';
         hand.clear();
-                        prompt('Type Your Question:')
-					   }
+		window._current = '';
+        prompt('Type Your Question:')
+		document.getElementById('log').innerHTML = window._log + window._current;
+		do_mathjax();
+}
 
-    function do_mathjax(){
-            if (window.MathJax && window.MathJax.Hub && typeof window.MathJax.Hub.Typeset !== 'undefined') {
-                window.MathJax.Hub.Typeset()
+function do_mathjax(){
+    if (window.MathJax && window.MathJax.Hub && typeof window.MathJax.Hub.Typeset !== 'undefined') {
+             window.MathJax.Hub.Typeset()
             }
             if (window.MathJax && typeof window.MathJax.typeset !== 'undefined') {
                 window.MathJax.typeset()
@@ -126,9 +133,30 @@ function makeid(length) {
 }
 
 window._log = '';
+
+
+function replace_symbols(txt){
+
+                    if (txt.match(/\[x\]/)){
+                        txt = txt.replace(/\[x\]/, "*");
+                        console.log("fixmul:", txt);
+                    }                    
+
+                    if (txt.match(/\[\/\]/)){
+                        txt = txt.replace(/\[\/\]/, "/");
+                        console.log("fixdiv:", txt);
+                    }                    
+	
+					if (txt.match(/\d+\s+\(/) && ltx.match(/\d+\\\s+\\frac/)){
+                        txt = txt.replace(/(\d)\s+\(/, "$1+(");
+                        console.log("fix:", txt);
+                    }
+				return txt;
+}
+
 			function check_ans(mf){
 				var ltx = mf.latex();
-				var txt = mf.text();
+				var txt = replace_symbols(mf.text());
                 console.log(ltx)
                 console.log(txt)
                 if(txt === "")
@@ -138,38 +166,29 @@ window._log = '';
                 if(window._question == ''){
                     window._question = ltx;
 
-                    if (txt.match(/\[\/\]/)){
-                        txt = txt.replace(/\[\/\]/, "/");
-                        console.log("fixdiv:", txt);
-                    }                    
 					window._answer = nerdamer(txt, ['numer']).evaluate().text();
-					window._log += `<span class=question > Q${window._qcount}: \\( ${ltx} \\)<br id=${id}> </span>`;
+					window._current = `<span class=question id="q${window._qcount}" > Q${window._qcount}: \\( ${ltx} \\)<br id=${id}> </span>`;
                     prompt('Type Your Answer:')
                 } else if(window._question === ltx){
-					    window._log += `<span style=color:red > <span style=color:red> you can't just type the question back <br id=${id}> </span>`;
+					    window._current += `<span style=color:red > <span style=color:red> you can't just type the question back <br id=${id}> </span>`;
                 } else {
 
 					console.log(window._answer)
 					console.log(window._question)
-
-					if (txt.match(/\d+\s+\(/) && ltx.match(/\d+\\\s+\\frac/)){
-                        txt = txt.replace(/(\d)\s+\(/, "$1+(");
-                        console.log("fix:", txt);
-                    }
-					console.log(window._answer)
-					console.log(window._question)
-					console.log(nerdamer(txt,['numer']).evaluate().text())
+     				console.log(nerdamer(txt,['numer']).evaluate().text())
                     if(window._answer == nerdamer(txt,['numer']).evaluate().text()){
-					    window._log += `<span style=color:green class=answer>Correct Answer: \\( ${ltx} \\) </span> <br id=${id}><hr>`;
+					    window._current += `<span style=color:green class=answer>Correct Answer: \\( ${ltx} \\) </span> <br id=${id}><hr>`;
                         window._answer = window._question = '' ;
                         prompt('Type Your Question:')
                         _qcount +=1 ;
+						window._log += window._current;
+						window._current = '';
                     } else {
-					    window._log += `<span style=color:red class=answer> Wrong Answer: \\( ${ltx} \\)<br id=${id}> </span>`;
+					    window._current += `<span style=color:red class=answer> Wrong Answer: \\( ${ltx} \\)<br id=${id}> </span>`;
                         prompt('Try Again: ')
                     }
                 }
-				log.innerHTML = window._log;
+				log.innerHTML = window._log + window._current;
 				setTimeout(()=>{ document.getElementById(id).scrollIntoView({block:"end"}); }, 100);
                     
 				do_mathjax();
