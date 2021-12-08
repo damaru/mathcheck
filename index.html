@@ -9,8 +9,9 @@
 		   <META HTTP-EQUIV='Content-Security-Policy' CONTENT="default-src 'self' * 'unsafe-inline' * *.damaru.org  ; script-src 'self' 'unsafe-inline' * 'unsafe-eval' *.damaru.org *.googleapis.com;  style-src 'self' 'unsafe-inline' * *.wiris.net *.googleapis.com; img-src * 'self' data: blob:;font-src * 'self' data:">
 		   <meta content="utf-8" http-equiv="encoding">
 		   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-		   <!--meta http-equiv="Content-Security-Policy" content="default-src *; img-src https://*; child-src 'none';"--!>
+		   <!--meta http-equiv="Content-Security-Policy" content="default-src *; img-src https://*; child-src 'none';"-->
 <link rel="stylesheet" href="mathquill/mathquill.css"/>
+<link rel="stylesheet" href="material-button.css"/>
 <script>var exports = {};</script>
 <script src="mathquill/mathquill.min.js"> </script>
 <!--script src="evaluatex/dist/evaluatex.min.js"></script-->
@@ -24,57 +25,128 @@
 
 <style>
 
+/*
+Name: Powerline.css
+Author: @vivekascoder (Github/Facebook/Instagram/Gmail)
+Email: vivekascoder@gmail.com
+Website: https://github.com/vivekascoder/powerline.css
+*/
+
+/* Font: FiraCode 
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@500&display=swap');
+*/
+/* Dealing with the Powerline */
+*{
+    padding: 0;
+    margin: 0;
+/*    font-family: 'Fira Code';*/
+}
+.powerline{
+    display: flex;
+    justify-content: left;
+	vertical-align: middle;
+}
+.powerline__prompt{
+    background-color: yellow;
+    font-size: 3em;
+    font-weight: 500;
+    position: relative;
+    padding: 3px 1.25rem;
+    margin-right: -14px;
+    cursor: pointer;
+    /*clip-path: polygon(0% 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 100% 100%, 0% 100%, 14px 50%);*/
+    clip-path: polygon(0% 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 100% 100%, 0% 100%, 0 50%);
+}
+
+.powerline__component{
+    background-color: yellow;
+    font-size: 3em;
+    font-weight: 500;
+    position: relative;
+    padding: 3px 1.25rem;
+    margin-right: -14px;
+    cursor: pointer;
+    clip-path: polygon(0% 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 100% 100%, 0% 100%, 14px 50%);
+}
+
+/* Background */
+.dracula-background{background-color: #282a36;}
+.dracula-currentline{background-color: #44475a;}
+.dracula-foreground{background-color: #f8f8f2;}
+.dracula-comment{background-color: #6272a4;}
+.dracula-cyan{background-color: #8be9fd;}
+.dracula-green{background-color: #50fa7b;}
+.dracula-orange{background-color: #ffb86c;}
+.dracula-pink{background-color: #ff79c6;}
+.dracula-purple{background-color: #bd93f9;}
+.dracula-red{background-color: #ff5555;}
+.dracula-yellow{background-color: #f1fa8c;}
+.dracula-blue{background-color: #2196f3;}
+
+/* Foreground */
+.dracula-text-light{color: #f8f8f2;}
+.dracula-text-dark{color: #282a36;}
+
 #math-field {
- width: 40vw;
  float:left;
- height: 180px;
-margin:20px;
+ width: 29vw;
+ height: 25vh;
+ margin: 2px;
 }
 
 #wiris{
-
+padding: 1px;
  float:left;
- width: 40vw;
- height: 180px;
-margin:20px;
+ width: 69vw;
+ height: 25vh;
+ margin: 2px;
 }
 
-.question {
-    margin: 20px;    
+.question, .answer {
     font-size: 3em;
     width: 100%;
     background-color: pink;
+    font-weight: 500;
+    position: relative;
+    padding: 3px 1.25rem;
+    margin-right: -14px;
+    cursor: pointer;
+    clip-path: polygon(0% 0%, calc(100% - 14px) 0%, 100% 50%, calc(100% - 14px) 100%, 100% 100%, 0% 100%, 14px 50%);
+}
+
+.question{
+    border-top: black 1px solid;
+}
+.answer{
+    background-color: white;
     border-bottom: black 1px dashed;
 }
-
-.answer {
-    margin: 20px;    
-    font-size: 2em;
-    background-color: wheat;
-}
-
 
 #toolbar {
  position: fixed;
  bottom: 0;
- min-height: 200px;
+ height: auto;
  width: 100vw;
- padding: 10px;
+ padding: 5;
  overflow: hidden;
  background: white;
  border-top: black 2px dashed;
 }
 
+#toolbar button{
+	margin: 10px;
+}
+
 #prompt{
- padding: 10px;
+ padding: 5px;
 
 }
 
 #log {
 overflow: scroll;
 position: fixed;
-height: calc(100vh - 200px);
-width: 90%;
+height: 60vh;
+width: 100%;
 }
 
 </style>
@@ -82,19 +154,23 @@ width: 90%;
 <div id=log> </div>
 <div id=toolbar> 
     <div id=prompt> Type Your Question</div> 
-
+	<div>
     <div id=math-field class=mathfield> </div> 
 	<div id="wiris" class="editor-container"></div>
-	<div id='buttons' style="float:left">
-    <button onclick="do_clear()" style="height: 50px; width: auto; min-width: 5vw; margin: 20px; background-color:#FF9999;  border: none;border-radius: 2px;"> clear </button><p></p>
-    <button onclick="check_ans(_mf)" style="height: 50px; width: auto; min-width: 5vw; margin: 20px; background: #99FF99;  border: none;border-radius: 2px;"> ok </button>
 	</div>
-
+	<div id='buttons' style=" clear: both;">
+    <button class="mui-btn mui-btn--primary mui-btn--raised" style="float:left;margin-right: 25%;" onclick="check_ans(window._mf)" > OK </button>
+    <button class="mui-btn mui-btn--danger mui-btn--raised" style="float:right;margin-left:25%" onclick="do_clear()" > clear </button> 
+    <button class="mui-btn mui-btn--grey mui-btn--raised" style="float:right;margin-right: 25%;" onclick="do_show()" > Show </button>
+	</div>
 
  </div>
 
 			   <script>
 
+function do_show(){
+_mf.latex(nerdamer(window._answer).latex()); check_ans(_mf)
+}
 
 function do_clear(){
 		window._mf.latex('');
@@ -147,7 +223,7 @@ function replace_symbols(txt){
                         console.log("fixdiv:", txt);
                     }                    
 	
-					if (txt.match(/\d+\s+\(/) && ltx.match(/\d+\\\s+\\frac/)){
+					if (txt.match(/\d+\s+\(/) ){
                         txt = txt.replace(/(\d)\s+\(/, "$1+(");
                         console.log("fix:", txt);
                     }
@@ -157,8 +233,8 @@ function replace_symbols(txt){
 			function check_ans(mf){
 				var ltx = mf.latex();
 				var txt = replace_symbols(mf.text());
-                console.log(ltx)
-                console.log(txt)
+                console.log("ltx", ltx)
+                console.log("txt", txt)
                 if(txt === "")
                     return;
 				var id = makeid(10);
@@ -167,28 +243,31 @@ function replace_symbols(txt){
                     window._question = ltx;
 
 					window._answer = nerdamer(txt, ['numer']).evaluate().text();
-					window._current = `<span class=question id="q${window._qcount}" > Q${window._qcount}: \\( ${ltx} \\)<br id=${id}> </span>`;
+					window._current = `<div class=powerline>  <span class="powerline__prompt dracula-blue">  Q${window._qcount}: </span> <span class=" question" id="q${window._qcount}" >\\( ${ltx} \\)<br id=${id}> </span></div>`;
                     prompt('Type Your Answer:')
                 } else if(window._question === ltx){
-					    window._current += `<span style=color:red > <span style=color:red> you can't just type the question back <br id=${id}> </span>`;
+					    window._current += `<div class=powerline>  <span class="powerline__prompt dracula-red">😟</span> <span class="answer" style=color:red> you can't just type the question back <br id=${id}> </span></div>`;
                 } else {
 
-					console.log(window._answer)
-					console.log(window._question)
-     				console.log(nerdamer(txt,['numer']).evaluate().text())
-                    if(window._answer == nerdamer(txt,['numer']).evaluate().text()){
-					    window._current += `<span style=color:green class=answer>Correct Answer: \\( ${ltx} \\) </span> <br id=${id}><hr>`;
+					console.log("ans", window._answer)
+					console.log("q", window._question)
+     				console.log("YOU", nerdamer(txt,['numer']).evaluate().text())
+                    if(txt === window._answer ||  window._answer === nerdamer(txt,['numer']).evaluate().text()){
+					    window._current += `<div class=powerline>  <span class="powerline__prompt dracula-green">😀</span> <span class="answer" style=color:#004400>  \\( ${ltx} ${txt!=_answer?" = " + _answer:""}\\)    <br id=${id}> </span></div><hr>`;
+					    //window._current += `<span style=color:green class=answer>Correct Answer: \\( ${ltx} \\) </span> <br id=${id}><hr>`;
                         window._answer = window._question = '' ;
                         prompt('Type Your Question:')
                         _qcount +=1 ;
 						window._log += window._current;
 						window._current = '';
                     } else {
-					    window._current += `<span style=color:red class=answer> Wrong Answer: \\( ${ltx} \\)<br id=${id}> </span>`;
+					    window._current += `<div class=powerline>  <span class="powerline__prompt dracula-red">😟</span><span class="answer" style=color:red > \\( ${ltx}\\)  (wrong answer) <br id=${id}> </span></div>`;
+					    //window._current += `<span style=color:red class=answer> Wrong Answer: \\( ${ltx} \\)<br id=${id}> </span>`;
                         prompt('Try Again: ')
                     }
                 }
 				log.innerHTML = window._log + window._current;
+				log.style.height = (window.visualViewport.height  - document.getElementById('toolbar').getBoundingClientRect().height )+'px';
 				setTimeout(()=>{ document.getElementById(id).scrollIntoView({block:"end"}); }, 100);
                     
 				do_mathjax();
@@ -303,6 +382,7 @@ window.onload = function () {
 				}
 		});
 document.getElementById("wiris").focus();
+
     };
 
 
