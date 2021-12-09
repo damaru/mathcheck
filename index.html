@@ -159,9 +159,9 @@ width: 100%;
 	<div id="wiris" class="editor-container"></div>
 	</div>
 	<div id='buttons' style=" clear: both;">
-    <button class="mui-btn mui-btn--primary mui-btn--raised" style="float:left;margin-right:5%;" onclick="check_ans(window._mf)" > OK </button>
-    <button class="mui-btn mui-btn--danger mui-btn--raised" style="float:right;margin-left:5%" onclick="do_clear()" > clear </button> 
+    <button class="mui-btn mui-btn--danger mui-btn--raised" style="float:left;margin-left:15%" onclick="do_clear()" > clear </button> 
     <button id=show class="mui-btn mui-btn--danger mui-btn--raised" style="float:right;margin-right:5%;display: none;" onclick="do_show()" > Show </button>
+    <button class="mui-btn mui-btn--primary mui-btn--raised" style="float:right;margin-right:15%;" onclick="check_ans(window._mf)" > OK </button>
 	</div>
 
  </div>
@@ -217,6 +217,10 @@ function replace_symbols(txt){
                         txt = txt.replace(/\[x\]/, "*");
                         console.log("fixmul:", txt);
                     }                    
+				if(txt.match(/sqrt\[\d+\]\(\d+\)/)){
+							txt = txt.replace(/sqrt\[(\d+)\]\((\d+)\)/, "($2)^(1/($1))");
+
+				}
 
                     if (txt.match(/\[\/\]/)){
                         txt = txt.replace(/\[\/\]/, "/");
